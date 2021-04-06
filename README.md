@@ -6,9 +6,9 @@ Example:
 package main
 
 import (
-	"fmt"
-	"github.com/natesales/aarch64-client-go/pkg/aarch64"
 	"log"
+
+	"github.com/natesales/aarch64-client-go"
 )
 
 func main() {
@@ -19,7 +19,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%+v", resp)
+	log.Printf("%+v", resp)
 }
-
 ```
