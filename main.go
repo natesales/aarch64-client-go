@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"net/url"
 )
 
 // API Server
@@ -180,7 +179,7 @@ func (c Client) DeleteVM(vm string) (APIResponse, error) {
 
 func (c Client) SignUp(email string, password string) (APIResponse, error) {
 	var resp APIResponse
-	if err := c.req("POST", "/auth/signup", url.Values{"email": {email}, "password": {password}}, &resp); err != nil {
+	if err := c.req("POST", "/auth/signup", map[string]string{"email": email, "password": password}, &resp); err != nil {
 		return APIResponse{}, err
 	}
 
@@ -190,7 +189,7 @@ func (c Client) SignUp(email string, password string) (APIResponse, error) {
 // Currently the aarch64 api only sends the Api key through the set-cookie headers.
 func (c Client) Login(email string, password string) (LoginResponse, error) {
 	var resp LoginResponse
-	if err := c.req("POST", "/auth/login", url.Values{"email": {email}, "password": {password}}, &resp); err != nil {
+	if err := c.req("POST", "/auth/login", map[string]string{"email": email, "password": password}, &resp); err != nil {
 		return LoginResponse{}, err
 	}
 	return resp, nil
