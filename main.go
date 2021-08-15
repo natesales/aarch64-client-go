@@ -91,7 +91,9 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 
 	// Set request headers
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", c.APIKey)
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", c.APIKey)
+	}
 
 	// Send the request
 	resp, err := c.client.Do(req)
