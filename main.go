@@ -99,23 +99,25 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 		return err
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(output); err != nil {
-		return err
-	}
 	var tmp map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&tmp); err != nil {
 		return err
 	}
-
+	// ugly workaround
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "key" {
 			// set the api key
 			tmp["key"] = cookie.Value
+			println(cookie.Value)
 		}
 	}
-	if output, err = json.Marshal(tmp); err != nil {
-		return err
+	// Marshal tmp json
+	marshalled, err := json.Marshal(tmp)
+	if err != nil {
+		return nil
 	}
+	// write to output
+	json.Unmarshal(marshalled, output)
 
 	return nil // nil error
 }
