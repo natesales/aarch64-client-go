@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	client := aarch64.Client{APIKey: "cfea63484ccfea63484bfe78ed72d2cbfe78eea63484bfe78e"}
+	client := aarch64.NewClient(APIKey: "cfea63484ccfea63484bfe78ed72d2cbfe78eea63484bfe78e")
 
 	resp, err := client.Projects()
 	if err != nil {
