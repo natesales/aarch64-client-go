@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 // API Server
@@ -22,6 +23,7 @@ type APIMeta struct {
 type APIResponse struct {
 	Data interface{} `json:"data"`
 	Meta APIMeta     `json:"meta"`
+	Key  string
 }
 
 type VM struct {
@@ -90,6 +92,13 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 		return err
 	}
 
+	// Currently, the api only returns the api key through cookies, so here's a bad workaround (that works) for the login api
+	for _, cookie := range resp.Cookies() {
+		if cookie.Name == "key" {
+			// set the api key
+			c.APIKey = cookie.Value
+		}
+	}
 	return nil // nil error
 }
 
@@ -141,6 +150,25 @@ func (c Client) CreateVM(hostname string, pop string, projectId string, plan str
 func (c Client) DeleteVM(vm string) (APIResponse, error) {
 	var resp APIResponse
 	if err := c.req("DELETE", "/vms/delete", map[string]string{"vm": vm}, &resp); err != nil {
+		return APIResponse{}, err
+	}
+
+	return resp, nil
+}
+
+func (c Client) SignUp(email string, password string) (APIResponse, error) {
+	var resp APIResponse
+	if err := c.req("POST", "/auth/signup", url.Values{"email": {email}, "password": {password}}, &resp); err != nil {
+		return APIResponse{}, err
+	}
+
+	return resp, nil
+}
+
+// Currently the aarch64 api only sends the Api key through the set-cookie headers.
+func (c Client) Login(email string, password string) (APIResponse, error) {
+	var resp APIResponse
+	if err := c.req("POST", "/auth/login", url.Values{"email": {email}, "password": {password}}, &resp); err != nil {
 		return APIResponse{}, err
 	}
 
