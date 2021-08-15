@@ -109,7 +109,6 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 		if cookie.Name == "key" {
 			// set the api key
 			tmp["key"] = cookie.Value
-			println(cookie.Value)
 		}
 	}
 	// Marshal tmp json
