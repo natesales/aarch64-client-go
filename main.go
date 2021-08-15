@@ -13,6 +13,9 @@ const server = "https://console.aarch64.com/api"
 
 type Client struct {
 	APIKey string
+
+	//reuse http client across requests
+	client *http.Client
 }
 
 type APIMeta struct {
@@ -59,6 +62,11 @@ type ProjectsResponse struct {
 	Projects []Project `json:"data"`
 }
 
+func NewClient(APIKey string) Client {
+	client := &http.Client{}
+	return Client{APIKey: APIKey, client: client}
+}
+
 func (c Client) req(method string, endpoint string, body interface{}, output interface{}) error {
 	var _body io.Reader
 
@@ -72,7 +80,6 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 		_body = bytes.NewBuffer(jsonBody)
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest(method, server+endpoint, _body)
 	if err != nil {
 		return err
@@ -83,7 +90,7 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 	req.Header.Set("Authorization", c.APIKey)
 
 	// Send the request
-	resp, err := client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
