@@ -26,11 +26,6 @@ type APIResponse struct {
 	Data interface{} `json:"data"`
 	Meta APIMeta     `json:"meta"`
 }
-type LoginResponse struct {
-	Data interface{} `json:"data"`
-	Meta APIMeta     `json:"meta"`
-	Key  string
-}
 
 type VM struct {
 	Id      string `json:"_id"`
@@ -100,24 +95,9 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 		return err
 	}
 
-	var tmp map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&tmp); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(output); err != nil {
 		return err
 	}
-	// ugly workaround
-	for _, cookie := range resp.Cookies() {
-		if cookie.Name == "key" {
-			// set the api key
-			tmp["key"] = cookie.Value
-		}
-	}
-	// Marshal tmp json
-	marshalled, err := json.Marshal(tmp)
-	if err != nil {
-		return nil
-	}
-	// write to output
-	json.Unmarshal(marshalled, output)
 
 	return nil // nil error
 }
@@ -186,10 +166,10 @@ func (c Client) SignUp(email string, password string) (APIResponse, error) {
 }
 
 // Currently the aarch64 api only sends the Api key through the set-cookie headers.
-func (c Client) Login(email string, password string) (LoginResponse, error) {
-	var resp LoginResponse
+func (c Client) Login(email string, password string) (APIResponse, error) {
+	var resp APIResponse
 	if err := c.req("POST", "/auth/login", map[string]string{"email": email, "password": password}, &resp); err != nil {
-		return LoginResponse{}, err
+		return APIResponse{}, err
 	}
 	return resp, nil
 }
