@@ -61,8 +61,7 @@ type ProjectsResponse struct {
 }
 
 func NewClient(APIKey string) Client {
-	client := &http.Client{}
-	return Client{APIKey: APIKey, client: client}
+	return Client{APIKey: APIKey, client: &http.Client{}}
 }
 
 func (c Client) req(method string, endpoint string, body interface{}, output interface{}) error {

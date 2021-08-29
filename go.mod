@@ -1,3 +1,3 @@
-module github.com/jcdea/aarch64-client-go
+module github.com/natesales/aarch64-client-go
 
 go 1.16
