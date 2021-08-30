@@ -12,6 +12,9 @@ const server = "https://console.aarch64.com/api"
 
 type Client struct {
 	APIKey string
+
+	//reuse http client across requests
+	client *http.Client
 }
 
 type APIMeta struct {
@@ -57,6 +60,10 @@ type ProjectsResponse struct {
 	Projects []Project `json:"data"`
 }
 
+func NewClient(APIKey string) Client {
+	return Client{APIKey: APIKey, client: &http.Client{}}
+}
+
 func (c Client) req(method string, endpoint string, body interface{}, output interface{}) error {
 	var _body io.Reader
 
@@ -70,7 +77,6 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 		_body = bytes.NewBuffer(jsonBody)
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest(method, server+endpoint, _body)
 	if err != nil {
 		return err
@@ -78,10 +84,12 @@ func (c Client) req(method string, endpoint string, body interface{}, output int
 
 	// Set request headers
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", c.APIKey)
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", c.APIKey)
+	}
 
 	// Send the request
-	resp, err := client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -144,5 +152,23 @@ func (c Client) DeleteVM(vm string) (APIResponse, error) {
 		return APIResponse{}, err
 	}
 
+	return resp, nil
+}
+
+func (c Client) SignUp(email string, password string) (APIResponse, error) {
+	var resp APIResponse
+	if err := c.req("POST", "/auth/signup", map[string]string{"email": email, "password": password}, &resp); err != nil {
+		return APIResponse{}, err
+	}
+
+	return resp, nil
+}
+
+// Currently the aarch64 api only sends the Api key through the set-cookie headers.
+func (c Client) Login(email string, password string) (APIResponse, error) {
+	var resp APIResponse
+	if err := c.req("POST", "/auth/login", map[string]string{"email": email, "password": password}, &resp); err != nil {
+		return APIResponse{}, err
+	}
 	return resp, nil
 }
