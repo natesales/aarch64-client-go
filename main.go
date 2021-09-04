@@ -3,6 +3,7 @@ package aarch64
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -156,6 +157,30 @@ func (c Client) DeleteVM(vm string) (APIResponse, error) {
 	return resp, nil
 }
 
+func (c Client) CreateProxy(vm string, hostname string) (APIResponse, error) {
+	var resp APIResponse
+	if err := c.req("POST", "/proxy", map[string]string{"vm": vm, "label": hostname}, &resp); err != nil {
+		return APIResponse{}, err
+	}
+	return resp, nil
+}
+
+func (c Client) DeleteProxy(proxy string) (APIResponse, error) {
+	var resp APIResponse
+	if err := c.req("DELTE", "/proxy", map[string]string{"proxy": proxy}, &resp); err != nil {
+		return APIResponse{}, err
+	}
+	return resp, nil
+}
+
+func (c Client) GetProxies(project string) (APIResponse, error) {
+	var resp APIResponse
+	if err := c.req("GET", fmt.Sprintf("/proxy/%v", project), nil, &resp); err != nil {
+		return APIResponse{}, err
+	}
+	return resp, nil
+}
+
 func (c Client) SignUp(email string, password string) (APIResponse, error) {
 	var resp APIResponse
 	if err := c.req("POST", "/auth/signup", map[string]string{"email": email, "password": password}, &resp); err != nil {
@@ -165,7 +190,6 @@ func (c Client) SignUp(email string, password string) (APIResponse, error) {
 	return resp, nil
 }
 
-// Currently the aarch64 api only sends the Api key through the set-cookie headers.
 func (c Client) Login(email string, password string) (APIResponse, error) {
 	var resp APIResponse
 	if err := c.req("POST", "/auth/login", map[string]string{"email": email, "password": password}, &resp); err != nil {
